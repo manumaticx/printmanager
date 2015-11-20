@@ -1,22 +1,32 @@
 package de.manumaticx.printmanager;
 
-import java.util.HashMap;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.io.TiBaseFile;
 import org.appcelerator.titanium.io.TiFileFactory;
-import org.appcelerator.titanium.util.TiRHelper;
-import org.appcelerator.titanium.util.TiRHelper.ResourceNotFoundException;
 
 import android.content.Context;
-import android.print.PrintManager;
+import android.os.Bundle;
+import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
+import android.print.PrintAttributes;
+import android.print.PrintAttributes.MediaSize;
 import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+import android.print.PrintManager;
 
 @Kroll.module(name="Printmanager", id="de.manumaticx.printmanager")
 public class PrintmanagerModule extends KrollModule
@@ -49,12 +59,11 @@ public class PrintmanagerModule extends KrollModule
 		Log.d(LCAT, "inside onAppCreate");
 	}
 	
+	@Kroll.method
 	public void print(Object args){
 		
-		String jobName = TiApplication.getInstance().getPackageName() + " Document";
-		getManager().print(jobName, pda, null);
-		
 		HashMap<String, String> d = (HashMap<String, String>) args;
+		final TiBaseFile file;
 		
 		if (!d.containsKey(TiC.PROPERTY_URL)){
 			Log.e(LCAT,"url not provided");
@@ -63,15 +72,16 @@ public class PrintmanagerModule extends KrollModule
 		
 		try {
 			// Load the image from the application assets
-			String url = getPathToApplicationAsset(d.get(TiC.PROPERTY_URL));
-			TiBaseFile file = TiFileFactory.createTitaniumFile(new String[] { url }, false);
+			String url = d.get(TiC.PROPERTY_URL);
+			file = TiFileFactory.createTitaniumFile(new String[] { url }, false);
+			return;
 			
 		} catch (IOException e) {
 			Log.e(LCAT,"File not found");
 		}
 		
-		
-		PrintDocumentAdapter pda = new PrintDocumentAdapter(){
+		String jobName = TiApplication.getInstance().getPackageName() + " Document";
+		getManager().print(jobName, new PrintDocumentAdapter(){
 
 		    @Override
 		    public void onWrite(PageRange[] pages, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback){
@@ -80,7 +90,7 @@ public class PrintmanagerModule extends KrollModule
 
 		        try {
 
-		            input = new FileInputStream(file);
+		            input = file.getInputStream();
 		            output = new FileOutputStream(destination.getFileDescriptor());
 
 		            byte[] buf = new byte[1024];
@@ -114,13 +124,12 @@ public class PrintmanagerModule extends KrollModule
 		            return;
 		        }
 
-		        int pages = computePageCount(newAttributes);
-
 		        PrintDocumentInfo pdi = new PrintDocumentInfo.Builder("Name of file").setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT).build();
 
 		        callback.onLayoutFinished(pdi, true);
 		    }
-		};
+		}, null);
+		
 	}
 
 }
