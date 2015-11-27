@@ -70,15 +70,9 @@ public class PrintmanagerModule extends KrollModule
 			return;
 		}
 		
-		try {
-			// Load the image from the application assets
-			String url = d.get(TiC.PROPERTY_URL);
-			file = TiFileFactory.createTitaniumFile(new String[] { url }, false);
-			return;
-			
-		} catch (IOException e) {
-			Log.e(LCAT,"File not found");
-		}
+		// Load the image from the application assets
+		String url = d.get(TiC.PROPERTY_URL);
+		file = TiFileFactory.createTitaniumFile(new String[] { url }, false);
 		
 		String jobName = TiApplication.getInstance().getPackageName() + " Document";
 		getManager().print(jobName, new PrintDocumentAdapter(){
@@ -102,17 +96,19 @@ public class PrintmanagerModule extends KrollModule
 
 		            callback.onWriteFinished(new PageRange[]{PageRange.ALL_PAGES});
 
-		        } catch (FileNotFoundException ee){
-		            //Catch exception
+		        } catch (FileNotFoundException e){
+		            e.printStackTrace();
 		        } catch (Exception e) {
-		            //Catch exception
+		            e.printStackTrace();
 		        } finally {
-		            try {
+							if (input != null && output != null){
+								try {
 		                input.close();
 		                output.close();
 		            } catch (IOException e) {
 		                e.printStackTrace();
 		            }
+							}
 		        }
 		    }
 
