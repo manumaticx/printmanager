@@ -14,6 +14,7 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.io.TiBaseFile;
 import org.appcelerator.titanium.io.TiFileFactory;
 
@@ -71,8 +72,9 @@ public class PrintmanagerModule extends KrollModule
 		}
 		
 		// Load the image from the application assets
-		String url = d.get(TiC.PROPERTY_URL);
-		file = TiFileFactory.createTitaniumFile(new String[] { url }, false);
+		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
+		String absUrl = resolveUrl(null, url);
+		file = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
 		
 		String jobName = TiApplication.getInstance().getPackageName() + " Document";
 		getManager().print(jobName, new PrintDocumentAdapter(){
