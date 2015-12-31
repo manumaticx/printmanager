@@ -77,6 +77,10 @@ public class PrintmanagerModule extends KrollModule
 		file = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
 		
 		String jobName = TiApplication.getInstance().getPackageName() + " Document";
+
+		if (!d.containsKey(TiC.PROPERTY_TITLE)){
+			jobName = (String) d.get(TiC.PROPERTY_TITLE);
+		}
 		getManager().print(jobName, new PrintDocumentAdapter(){
 
 		    @Override
