@@ -20,8 +20,6 @@ PrintManager.print({
 });
 ```
 
-For now, there is only this on `print` method
-
 ## License
 
 [The MIT License (MIT)](LICENSE)
